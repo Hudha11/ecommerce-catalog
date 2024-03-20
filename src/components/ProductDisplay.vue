@@ -1,17 +1,17 @@
 <template>
   <div class="container">
     <div class="page-bg-women">
-      <div class="product-card">
-        <img :src="product.image" :alt="product.name" class="product-image" />
+      <div v-if="currentProduct" :key="currentProduct.id" class="product-card">
+        <img :src="currentProduct.image" :alt="currentProduct.title" class="product-image" />
         <div class="product-details">
-          <h2 class="product-name">{{ product.name }}</h2>
-          <p class="product-category">{{ product.category }}</p>
+          <h2 class="product-title">{{ currentProduct.title }}</h2>
+          <p class="product-category">{{ currentProduct.category }}</p>
           <div class="vektor-top"></div>
-          <p class="product-description">{{ product.description }}</p>
+          <p class="product-description">{{ currentProduct.description }}</p>
           <div class="vektor-bottom"></div>
-          <p class="product-price">{{ product.price }}</p>
+          <p class="product-price">{{ "$" + currentProduct.price }}</p>
           <button class="buy-now-btn">Buy now</button>
-          <button class="next-product-btn">Next product</button>
+          <button @click="getNextProduct" class="next-product-btn">Next product</button>
         </div>
       </div>
     </div>
@@ -19,17 +19,45 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
-  props: {
-    product: {
-      type: Object,
-      required: true,
-    },
+  data() {
+    return {
+      products: [],
+      currentProductIndex: 0,
+    };
+  },
+  mounted() {
+    this.fetchProducts();
   },
   methods: {
-    addToCart() {
-      // Add functionality to add the product to the cart
-      console.log("Product added to cart:", this.product.name);
+    fetchProducts() {
+      axios
+        .get("https://fakestoreapi.com/products")
+        .then((response) => {
+          this.products = response.data;
+          this.setCurrentProduct();
+        })
+        .catch((error) => {
+          console.error("Error fetching data:", error);
+        });
+    },
+    setCurrentProduct() {
+      this.currentProduct = this.products[this.currentProductIndex];
+    },
+    getNextProduct() {
+      if (this.currentProductIndex < this.products.length - 1) {
+        this.currentProductIndex++;
+      } else {
+        this.currentProductIndex = 0; // Jika sudah di akhir, kembali ke awal
+      }
+      this.setCurrentProduct();
+    },
+  },
+  computed: {
+    currentProduct() {
+      return this.products[this.currentProductIndex];
     },
   },
 };
@@ -80,7 +108,7 @@ export default {
   top: 40px;
 }
 
-.product-name {
+.product-title {
   position: absolute;
   width: 548px;
   height: 68px;
